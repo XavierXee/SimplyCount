@@ -3,6 +3,7 @@ import { Storage } from '@ionic/storage';
 import { Platform } from 'ionic-angular';
 import { FormsModule }   from '@angular/forms';
 import { Data } from '../../services/data';
+import { Utils } from '../../services/utils';
 
 //import { HttpService } from '@angular/core';
 // import { NavController } from 'ionic-angular';
@@ -75,18 +76,6 @@ export class HomePage {
 		console.log("!!!!!!!!!!!!!!!");
 	}
 
-	formatCounts(){
-
-		var countsLite:ICount[] = [];
-
-		for (var i = 0; i < this.counts.length; ++i) {
-			
-			countsLite.push({'id' : this.counts[i].id, 'name' : this.counts[i].name});
-
-		}
-
-	}
-
     formatDate(date: Date): string {
 
     	return date.getUTCDate().toString() + "/" + date.getUTCMonth().toString() + "/" + date.getUTCFullYear().toString();
@@ -138,7 +127,6 @@ export class HomePage {
     	if(this.currentCount.records.indexOf(this.currentRecord) != this.currentCount.records.length-1){
 			this.currentRecord = this.currentCount.records[recordIndex+1];
     	}
-    	console.log("swipe left");
 
     }
 
@@ -191,7 +179,7 @@ export class HomePage {
     	console.log("|| create Count ||");
 
     	var count: ICount = {
-			id: this.counts.length.toString(),
+			id: this.counts ? this.counts.length.toString() : "0",
 			name: "New Count",
 			records: [this.createRecord()]
     	};
@@ -218,27 +206,12 @@ export class HomePage {
 
     	this.countsAmount = this.counts.length;
 
-  //   	this.D.saveAll(this.counts, this.counts).then((res) => {
+    	this.D.saveAll(this.counts).then((res) => {
 
-  //   		var updatedCounts = [];
-  //   		var data = res;
-		// 	this.countsAmount = data.shift();
+    		console.log("store :: ", res);
+    		console.log("store :: counts", this.counts);
 
-			
-		// 	for (var i = 0; i < data.length; ++i) {
-
-		// 		updatedCounts.push(JSON.parse(data[i]));
-
-		// 	}
-
-		// 	console.log("Debug ------------");
-		// 	console.log("expect true => ", JSON.stringify(this.counts) === JSON.stringify(updatedCounts));
-		// 	console.log("Debug ------------");
-
-		// 	this.counts = updatedCounts;
-
-
-		// });
+		});
 
     }
 
@@ -260,27 +233,28 @@ export class HomePage {
 
     init(d){
 
-    	console.log(d);
-    	console.log(JSON.parse(d.shift()));
-    	debugger;
-
 		var data = d;
+		this.counts = JSON.parse(data.shift());
+		
+		if (!this.counts) { 
 
-		// this.counts = JSON.parse(data.shift()) || this.createCount();
+			this.counts = [];
+			this.creationMode = true;
 
-		if(d[0]){
+		} else {
 
 			// if counst list is not null, fetch records for each count
 
 			for (var i = 0; i < data.length; ++i) {
 
-				var c = null;
+				data[i] = JSON.parse(data[i]);
 
 				for (var j = 0; j < this.counts.length; ++j) {
 					
 					if(this.counts[j].id === data[i].id){
 
-						this.counts[j].records = JSON.parse(data[i].records);
+						this.counts[j]["records"] = [];
+						this.counts[j].records = data[i].records;
 
 					}
 
@@ -288,19 +262,11 @@ export class HomePage {
 
 			}
 
-		} else {
-
-			// Create first count if countsList from fetch == null
-
-			// this.counts = JSON.parse(data.shift()) || this.createCount();
-
 		}
 
 		this.countsAmount = this.counts.length;
-
 		this.currentCount = this.counts[this.counts.length-1];
 
-		console.log(this.counts);
 
     	if(this.getToday() !== this.currentCount.records[this.currentCount.records.length-1].date){
 
@@ -310,17 +276,17 @@ export class HomePage {
 
     	this.currentRecord = this.currentCount.records[this.currentCount.records.length-1];
 
-    	// this.store();
+		this.store();
 
     }
 
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // Class Constructor
-	constructor(public platform: Platform, private storage: Storage, public D: Data) {
+	constructor(public platform: Platform, private storage: Storage, public D: Data, public utils: Utils) {
 
 		var q = [platform.ready(), D.start()];
+
 		Promise.all(q).then((d) => {
-		// platform.ready().then(() => {
 
     		this.D.fetch(Number(d[1])).then((result) => {
 
@@ -331,6 +297,7 @@ export class HomePage {
 	    		this.errorHandler(err);
 
 	    	});
+
 
 	    });
     

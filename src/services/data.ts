@@ -27,7 +27,6 @@ export class Data {
 
 	fetch(n: number){
 
-    	// var q = [this.storage.get('countsAmount'), this.storage.get('counts')];
     	var q = [this.storage.get('counts')];
 
     	for (var i = 0; i < n; ++i) {
@@ -39,8 +38,6 @@ export class Data {
 	}
 
 	fetchSingle(i:number){
-
-		// var q = [this.storage.get('countsAmount'), this.storage.get('counts')];
 		
 		return this.storage.get(i.toString());
 
@@ -54,29 +51,21 @@ export class Data {
 
 	}
 
-	saveAll(n, d){
+	saveAll(d){
 
-		// var q = [this.storage.set('countsAmount', n.toString()), this.storage.set(i.toString(), JSON.stringify(d))];//old
+		var c = [];
+		var q = [];
 
-		var q = [this.storage.set('countsAmount', n.toString())];
+		for (var i = 0; i < d.length; ++i) {
 
-		for (var i = 0; i < n; ++i) {
-
-			var _d;
-
-			for (var j = 0; j < d.length; ++j) {
-				if(d[j].id == j){
-					_d = d[j];
-				}
-			}
-
-			console.log("DEBUG--------", _d);
-			console.log("DEBUG--------", d[i]);
-			console.log("DEBUG--------", JSON.stringify(d[i]) == JSON.stringify(d[i]));
-
-			q.push(this.storage.set(j.toString(), JSON.stringify(_d)));
-
+			q.push(this.storage.set(d[i].id, JSON.stringify( {"id" : d[i].id, "records" : d[i].records} )));
+			c.push({"id": d[i].id, "name" : d[i].name})
+			
 		}
+
+		q.push(this.storage.set('countsAmount', d.length.toString()));
+		q.push(this.storage.set('counts', JSON.stringify(c)));
+
 
 		return Promise.all(q);
 		
