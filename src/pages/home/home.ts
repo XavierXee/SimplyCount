@@ -235,16 +235,18 @@ export class HomePage {
 
 		var data = d;
 		this.counts = JSON.parse(data.shift());
+
+		console.log('init debut : ', this.counts, !this.counts);
 		
 		if (!this.counts) { 
 
 			this.counts = [];
+			this.createCount();
 			this.creationMode = true;
 
 		} else {
 
 			// if counst list is not null, fetch records for each count
-
 			for (var i = 0; i < data.length; ++i) {
 
 				data[i] = JSON.parse(data[i]);
@@ -254,7 +256,7 @@ export class HomePage {
 					if(this.counts[j].id === data[i].id){
 
 						this.counts[j]["records"] = [];
-						this.counts[j].records = data[i].records;
+						this.counts[j].records.push(this.createRecord());
 
 					}
 
@@ -263,6 +265,10 @@ export class HomePage {
 			}
 
 		}
+
+		console.log("COUNTS");
+		console.log(this.counts);
+		console.log("COUNTS");
 
 		this.countsAmount = this.counts.length;
 		this.currentCount = this.counts[this.counts.length-1];
@@ -288,15 +294,24 @@ export class HomePage {
 
 		Promise.all(q).then((d) => {
 
-    		this.D.fetch(Number(d[1])).then((result) => {
+			this.countsAmount = Number(d[1]);
 
-    			this.init(result);
+			this.D.drop(this.countsAmount).then((res) => {
 
-    		}, (err) => {
+				console.log("DROP : ", res);
 
-	    		this.errorHandler(err);
+	    		this.D.fetch(this.countsAmount).then((result) => {
 
-	    	});
+	    			this.init(result);
+
+	    		}, (err) => {
+
+		    		this.errorHandler(err);
+
+		    	});
+			});
+
+
 
 
 	    });

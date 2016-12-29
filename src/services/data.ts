@@ -12,6 +12,17 @@ export class Data {
 
 	}
 
+	drop(n){
+
+		var q = [this.storage.remove('countsAmount'), this.storage.remove('counts')];
+		
+		for (var i = 0; i < n; ++i) {
+    		q.push(this.storage.remove(i.toString()));
+    	}
+
+		return Promise.all(q);
+	}
+
 	getCount(){
 
 	}
@@ -26,6 +37,8 @@ export class Data {
 
 
 	fetch(n: number){
+
+		console.log("fetch")
 
     	var q = [this.storage.get('counts')];
 
