@@ -28,7 +28,12 @@
         </div>
         <div (tap)="onTap($event)" class="mainBtn"></div>
         <div (swipeRight)="onSwipeRight(false)" (swipeLeft)="onSwipeLeft(false)" id="recordsPanel">
-          <div *ngIf="currentRecord">{{currentRecord.date}}</div>
+          <div *ngIf="currentRecord" id="date">
+            <div>{{currentDate[2]}}</div>
+            <div>{{currentDate[1].toUpperCase()}}</div>
+            <div>{{currentDate[3]}}</div>
+            <div>{{currentDate[0].toUpperCase()}}</div>
+          </div>
           <div class="t1" *ngIf="currentRecord && currentRecord.amount != null">{{currentRecord.amount}}</div>          
           <div class="t1" *ngIf="currentRecord && currentRecord.amount == null">_</div>          
         </div>

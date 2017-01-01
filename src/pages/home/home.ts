@@ -65,6 +65,8 @@ export class HomePage {
 	public deleteMode: boolean = false;
 	public editMode: boolean = false;
 
+	private currentDate:string[];
+
 	private dateText: string;
 
 
@@ -88,11 +90,13 @@ export class HomePage {
 
     }
 
-    formatDateText(): string {
+    formatDateText() {
 
-    	console.log("format date text : ", new Date());
+    	var d = this.currentRecord.date;
+    	console.log("format date text : ", d);
+    	console.log("format date text : ", new Date(Number(d.split("/")[2]), Number(d.split("/")[1]), Number(d.split("/")[0])));
 
-    	return "";
+    	this.currentDate = new Date(Number(d.split("/")[2]), Number(d.split("/")[1]), Number(d.split("/")[0])).toString().split(" ");
 
     }
 
@@ -121,6 +125,7 @@ export class HomePage {
 	    	if(this.counts.indexOf(this.currentCount) != 0){
 	    		this.currentCount = this.counts[countIndex-1];
 	    		this.currentRecord = this.currentCount.records[this.currentCount.records.length-1];
+	    		this.formatDateText();
 	    	}
 
     	} else {
@@ -129,11 +134,10 @@ export class HomePage {
 
 	    	if(this.currentCount.records.indexOf(this.currentRecord) != 0){
 	    		this.currentRecord = this.currentCount.records[recordIndex-1];
+	    		this.formatDateText();
 	    	}
 
     	}
-
-    	this.formatDateText();
 
     }
 
@@ -146,6 +150,7 @@ export class HomePage {
 	    	if(this.counts.indexOf(this.currentCount) != this.counts.length -1){
 	    		this.currentCount = this.counts[countIndex+1];
 	    		this.currentRecord = this.currentCount.records[this.currentCount.records.length-1];
+	    		this.formatDateText();
 	    	}
 
     	} else {
@@ -154,6 +159,7 @@ export class HomePage {
 
     		if(this.currentCount.records.indexOf(this.currentRecord) != this.currentCount.records.length-1){
 				this.currentRecord = this.currentCount.records[recordIndex+1];
+				this.formatDateText();
     		}
 
     	}
@@ -324,6 +330,7 @@ export class HomePage {
 		this.countsAmount = this.counts.length;
 		this.currentCount = this.counts[this.counts.length-1];
     	this.currentRecord = this.currentCount.records[this.currentCount.records.length-1];
+    	this.formatDateText();
 		this.creationMode = true;
 
     }
@@ -397,6 +404,8 @@ export class HomePage {
 			}
 
 	    	this.currentRecord = this.currentCount.records[this.currentCount.records.length-1];
+
+	    	this.formatDateText();
 
 			this.store();
 

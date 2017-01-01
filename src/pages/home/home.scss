@@ -73,7 +73,7 @@ page-home {
 	.t1 {
 		position: absolute;
 		bottom: 4px;
-		left: 14px;
+		right: 14px;
 		font-size: 80px;
 		color: #FFF;
 	}
@@ -167,6 +167,20 @@ page-home {
 
 	#infoPanel {
 
+	}
+
+	#date {
+	    width: 50%;
+	    position: absolute;
+	    bottom: 0px;
+	    left: 0px;
+	    text-align: justify;
+	    font-size: 50px;
+	    line-height: 34px;
+	    font-family: helvetica;
+	    font-weight: 100;
+	    color: #FFFFFF;
+	    opacity: 0.4;
 	}
 
 	.btnOn {
