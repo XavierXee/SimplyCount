@@ -61,12 +61,12 @@ export class HomePage {
 	private doubleTap: boolean = false;
 	private doubleTapPrevTimeStamp: number;
 
-	private creationMode: boolean = false;
-	private editMode: boolean = false;
+	public creationMode: boolean = false;
+	public deleteMode: boolean = false;
+	public editMode: boolean = false;
 
 	private dateText: string;
 
-	private newCount: ICount = { id: "", name: "" };
 
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// Utils
@@ -90,6 +90,8 @@ export class HomePage {
 
     formatDateText(): string {
 
+    	console.log("format date text : ", new Date());
+
     	return "";
 
     }
@@ -110,22 +112,50 @@ export class HomePage {
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // Events 
 
-    onSwipeRight(){
+    onSwipeRight(modeCount: boolean){
 
-    	var recordIndex = this.currentCount.records.indexOf(this.currentRecord);
+    	if(modeCount){
 
-    	if(this.currentCount.records.indexOf(this.currentRecord) != 0){
-    		this.currentRecord = this.currentCount.records[recordIndex-1];
+	    	var countIndex = this.counts.indexOf(this.currentCount);
+
+	    	if(this.counts.indexOf(this.currentCount) != 0){
+	    		this.currentCount = this.counts[countIndex-1];
+	    		this.currentRecord = this.currentCount.records[this.currentCount.records.length-1];
+	    	}
+
+    	} else {
+
+	    	var recordIndex = this.currentCount.records.indexOf(this.currentRecord);
+
+	    	if(this.currentCount.records.indexOf(this.currentRecord) != 0){
+	    		this.currentRecord = this.currentCount.records[recordIndex-1];
+	    	}
+
     	}
+
+    	this.formatDateText();
 
     }
 
-    onSwipeLeft(){
-		
-		var recordIndex = this.currentCount.records.indexOf(this.currentRecord);
+    onSwipeLeft(modeCount: boolean){
 
-    	if(this.currentCount.records.indexOf(this.currentRecord) != this.currentCount.records.length-1){
-			this.currentRecord = this.currentCount.records[recordIndex+1];
+    	if(modeCount){
+
+	    	var countIndex = this.counts.indexOf(this.currentCount);
+
+	    	if(this.counts.indexOf(this.currentCount) != this.counts.length -1){
+	    		this.currentCount = this.counts[countIndex+1];
+	    		this.currentRecord = this.currentCount.records[this.currentCount.records.length-1];
+	    	}
+
+    	} else {
+		
+			var recordIndex = this.currentCount.records.indexOf(this.currentRecord);
+
+    		if(this.currentCount.records.indexOf(this.currentRecord) != this.currentCount.records.length-1){
+				this.currentRecord = this.currentCount.records[recordIndex+1];
+    		}
+
     	}
 
     }
@@ -136,21 +166,40 @@ export class HomePage {
 
     }
 
-    triggerDoubleTap(){
+    triggerDoubleTap(modeDelete:boolean){
 
-		this.currentRecord.amount++;
-		this.store();
+    	if(modeDelete){
+
+    		this.deleteMode = true;
+
+    	} else {
+
+    		console.log("here --->>>> ", this.currentRecord);
+
+    		if(this.currentRecord.amount == null){
+
+    			this.currentRecord.amount = 0;
+
+    		} else {
+
+				this.currentRecord.amount++;
+
+    		}
+			
+			this.store();
+
+    	}
 
     }
 
-    onTap($event){
+    onTap($event, modeDelete:boolean){
 
     	if($event.timeStamp - this.doubleTapPrevTimeStamp > 300){
     		this.doubleTap = false;
     	}
     	if(this.doubleTap === true){
     		if($event.timeStamp - this.doubleTapPrevTimeStamp < 300){
-	    		this.triggerDoubleTap();
+	    		this.triggerDoubleTap(modeDelete);
     		}
     		this.doubleTap = false;
     	} else {
@@ -166,11 +215,26 @@ export class HomePage {
     createRecord(): IRecord {
 
     	var record: IRecord = {
-			amount: 999,
+			amount: null,
 			date: this.formatDate(new Date())
     	};
 
 		return record;
+
+    }
+
+    getNextId():string {
+
+    	var id;
+    	var idArray = [];
+
+    	for (var i = 0; i < this.counts.length; ++i) {
+    		idArray.push(Number(this.counts[i].id));
+    	}
+
+    	id = Math.max.apply(Math, idArray) + 1;
+
+    	return id.toString();
 
     }
 
@@ -180,7 +244,7 @@ export class HomePage {
 
     	var count: ICount = {
 			id: this.counts ? this.counts.length.toString() : "0",
-			name: "New Count",
+			name: "",
 			records: [this.createRecord()]
     	};
 
@@ -190,27 +254,63 @@ export class HomePage {
 
     }
 
-    storeNewCount(){
-
-    	var newCountToPush = JSON.parse(JSON.stringify(this.newCount));
-    	this.counts.push(newCountToPush);
-
-    }
 
     storeCurrentCount(){
 
 
     }
 
-    store(){
+    store(d?:ICount){
 
     	this.countsAmount = this.counts.length;
 
-    	this.D.saveAll(this.counts).then((res) => {
+    	if(d){
+	  //   	this.D.save(d, this.counts).then((res) => {
 
-    		console.log("store :: ", res);
-    		console.log("store :: counts", this.counts);
+	  //   		console.log("store :: ", res);
+	  //   		console.log("store :: counts", this.counts);
 
+	  //   		this.creationMode = false;
+
+			// });
+    	} else {
+
+	    	this.D.saveAll(this.counts).then((res) => {
+
+	    		console.log("store :: ", res);
+	    		console.log("store :: counts", this.counts);
+
+	    		if(!this.counts || this.counts.length === 0){
+	    			this.counts = [];
+					this.startCreationMode();
+	    		} else {
+		    		this.creationMode = false;
+	    		}
+
+				this.countsAmount = this.counts.length;
+				this.currentRecord = this.currentCount.records[this.currentCount.records.length-1];
+
+			});
+
+    	}
+
+    }
+
+    deleteCount(){
+
+		this.D.deleteCount(this.currentCount).then(()=>{
+
+			this.deleteMode = false;
+
+			var index = this.counts.indexOf(this.currentCount);
+			if (index > -1) {
+			    this.counts.splice(index, 1);
+			}
+
+			this.currentCount = this.counts[this.counts.length-1];
+
+			this.store();
+			
 		});
 
     }
@@ -220,14 +320,31 @@ export class HomePage {
 
     startCreationMode(){
 
-    	this.creationMode = true;
+		this.createCount();		
+		this.countsAmount = this.counts.length;
+		this.currentCount = this.counts[this.counts.length-1];
+    	this.currentRecord = this.currentCount.records[this.currentCount.records.length-1];
+		this.creationMode = true;
 
     }
 
-    quitCreationMode(){
+    quitCreationMode(o: boolean){
 
-    	this.creationMode = false;
-    	this.newCount = { id:"", name:"" };
+    	if(!o){
+
+    		if(this.counts.length > 1){
+	
+	    		this.counts.pop();
+	    		this.currentCount = this.counts[this.counts.length-1];
+    			this.creationMode = false;
+
+    		}
+
+    	} else {
+
+    		this.store();
+
+    	}
 
     }
 
@@ -241,8 +358,7 @@ export class HomePage {
 		if (!this.counts) { 
 
 			this.counts = [];
-			this.createCount();
-			this.creationMode = true;
+			this.startCreationMode();
 
 		} else {
 
@@ -252,11 +368,14 @@ export class HomePage {
 				data[i] = JSON.parse(data[i]);
 
 				for (var j = 0; j < this.counts.length; ++j) {
+
+					console.log('data --> records :::  ', data[i].records);
 					
 					if(this.counts[j].id === data[i].id){
 
-						this.counts[j]["records"] = [];
-						this.counts[j].records.push(this.createRecord());
+						// this.counts[j]["records"] = [];
+						this.counts[j].records = data[i].records
+						// this.counts[j].records.push(this.createRecord());
 
 					}
 
@@ -264,25 +383,24 @@ export class HomePage {
 
 			}
 
+			this.countsAmount = this.counts.length;
+			this.currentCount = this.counts[this.counts.length-1];
+
+			for (var i = 0; i < this.counts.length; ++i) {
+			
+		    	if(this.getToday() !== this.counts[i].records[this.counts[i].records.length-1].date){
+
+		    		this.counts[i].records.push(this.createRecord());
+
+		    	}
+
+			}
+
+	    	this.currentRecord = this.currentCount.records[this.currentCount.records.length-1];
+
+			this.store();
+
 		}
-
-		console.log("COUNTS");
-		console.log(this.counts);
-		console.log("COUNTS");
-
-		this.countsAmount = this.counts.length;
-		this.currentCount = this.counts[this.counts.length-1];
-
-
-    	if(this.getToday() !== this.currentCount.records[this.currentCount.records.length-1].date){
-
-    		this.currentCount.records.push(this.createRecord());
-
-    	}
-
-    	this.currentRecord = this.currentCount.records[this.currentCount.records.length-1];
-
-		this.store();
 
     }
 
@@ -296,9 +414,7 @@ export class HomePage {
 
 			this.countsAmount = Number(d[1]);
 
-			this.D.drop(this.countsAmount).then((res) => {
-
-				console.log("DROP : ", res);
+			// this.D.drop(this.countsAmount).then((res) => {
 
 	    		this.D.fetch(this.countsAmount).then((result) => {
 
@@ -309,7 +425,8 @@ export class HomePage {
 		    		this.errorHandler(err);
 
 		    	});
-			});
+
+			// });
 
 
 

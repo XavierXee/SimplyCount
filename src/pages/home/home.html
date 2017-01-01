@@ -6,41 +6,48 @@
   </ion-navbar> -->
 </ion-header>
 
-<ion-content padding>
+<ion-content>
+<!-- <ion-content padding> -->
+
+    <div *ngIf="deleteMode" id="deletePanel">
+      <div id="deleteConfirm">
+        <div id="confirmTitle">
+          Delete <span id="deletePanelCurrentCountName">{{currentCount.name}}</span> ?
+        </div>
+        <span (tap)="deleteMode = false" class="btnOff">No</span>
+        <span (tap)="deleteCount()" class="btnOn">Yes</span>
+      </div>
+    </div>
     
-    <div *ngIf="!creationMode" id="content" style="height:100%; padding-top: 200px; text-align:center; border: solid 1px #000;"
-        (swipeRight)="onSwipeRight($event)"
-        (swipeLeft)="onSwipeLeft($event)"
-        (tap)="onTap($event)">
-      <div *ngIf="currentCount">{{currentCount.id}}</div>
-      <div *ngIf="currentCount">{{currentCount.name}}</div>
-      <div *ngIf="currentRecord">{{currentRecord.date}}</div>
-      <div *ngIf="currentRecord" style="margin: 0 auto;">{{currentRecord.amount}}</div>
-      <div (tap)="startCreationMode()" id="new" style="border: solid 1px #000000;width: 30%;padding: 20px; margin: 10px auto;">+</div>
+    <div *ngIf="!creationMode" id="mainPanel">
+        <div class="top-left">
+          <div (tap)="startCreationMode()" id="create" class="topBtn">+</div>
+        </div>
+        <div (swipeRight)="onSwipeRight(true)" (swipeLeft)="onSwipeLeft(true)" id="countsPanel">
+          <div *ngIf="currentCount" (tap)="onTap($event, true)" id="currentCountName">{{currentCount.name}}</div>
+        </div>
+        <div (tap)="onTap($event)" class="mainBtn"></div>
+        <div (swipeRight)="onSwipeRight(false)" (swipeLeft)="onSwipeLeft(false)" id="recordsPanel">
+          <div *ngIf="currentRecord">{{currentRecord.date}}</div>
+          <div class="t1" *ngIf="currentRecord && currentRecord.amount != null">{{currentRecord.amount}}</div>          
+          <div class="t1" *ngIf="currentRecord && currentRecord.amount == null">_</div>          
+        </div>
     </div>
 
-    <div *ngIf="creationMode" id="content" style="height:100%; padding-top: 200px; text-align:center; border: solid 1px #000;">
-      <form (ngSubmit)="storeNewCount($event)">
-        <div style="border: solid 1px #000;">
-          <input [(ngModel)]="newCount.name" name="newCount.name" type="text" placeholder="Count name">
-        </div>
-        <div style="border: solid 1px #000;">
-          <label>Conpound</label><input type="checkbox">
-          <!-- <input [(ngModel)]="newCount.id" name="newCount.name" type="number" placeholder="id"> -->
-        </div>
-        <button type="submit">OK</button>
+    <div *ngIf="creationMode" id="creationPanel">
+      <div class="top-left">
+        <div (tap)="quitCreationMode(false)" id="back" class="topBtn"><</div>
+      </div>
+      <form (ngSubmit)="quitCreationMode(true)">
+        <input [(ngModel)]="currentCount.name" required name="newCount.name" type="text" placeholder="Count name">
+        <button class="okBtn" type="submit">OK</button>
       </form>
-      <div (tap)="quitCreationMode()" id="back" style="border: solid 1px #000000;width: 30%;padding: 20px; margin: 10px auto;">-</div>
     </div>
 
     <div *ngIf="editMode" id="content" style="height:100%; padding-top: 200px; text-align:center; border: solid 1px #000;">
-      <form (ngSubmit)="storeCurrentCount()">
+      <form (ngSubmit)="store()">
         <div style="border: solid 1px #000;">
-          <input [(ngModel)]="newCount.name" name="newCount.name" type="text" placeholder="Count name">
-        </div>
-        <div style="border: solid 1px #000;">
-
-          <!-- <input [(ngModel)]="newCount.id" name="newCount.name" type="number" placeholder="id"> -->
+          <input [(ngModel)]="currentCount.name" name="newCount.name" type="text" placeholder="Count name">
         </div>
         <button type="submit">OK</button>
       </form>

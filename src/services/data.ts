@@ -23,6 +23,10 @@ export class Data {
 		return Promise.all(q);
 	}
 
+	deleteCount(i){
+		return this.storage.remove(i.id);
+	}
+
 	getCount(){
 
 	}
@@ -30,11 +34,6 @@ export class Data {
 	setCount(){
 
 	}
-
-	delete(){
-
-	}
-
 
 	fetch(n: number){
 
